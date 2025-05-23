@@ -65,6 +65,11 @@ z_result_t _z_open_link(_z_link_t *zl, const _z_string_t *locator) {
             ret = _z_new_link_ws(zl, &ep);
         } else
 #endif
+#if Z_FEATURE_LINK_MCTP == 1
+        if (_z_endpoint_mctp_valid(&ep) == _Z_RES_OK) {
+            ret = _z_new_link_mctp(zl, &ep);
+        } else
+#endif
         {
             ret = _Z_ERR_CONFIG_LOCATOR_SCHEMA_UNKNOWN;
         }
@@ -223,6 +228,10 @@ const _z_sys_net_socket_t *_z_link_get_socket(const _z_link_t *link) {
 #if Z_FEATURE_RAWETH_TRANSPORT == 1
         case _Z_LINK_TYPE_RAWETH:
             return &link->_socket._raweth._sock;
+#endif
+#if Z_FEATURE_LINK_MCTP == 1
+        case _Z_LINK_TYPE_MCTP:
+            return &link->_socket._mctp._sock;
 #endif
         default:
             _Z_INFO("Unknown link type");

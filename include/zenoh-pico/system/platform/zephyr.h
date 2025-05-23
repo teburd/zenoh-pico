@@ -26,6 +26,13 @@
 #include <zephyr/kernel.h>
 #endif
 
+#if Z_FEATURE_LINK_MCTP == 1
+#include <libmctp.h>
+#include <zephyr/pmci/mctp/mctp_uart.h>
+#include <zephyr/pmci/mctp/mctp_i2c_gpio_controller.h>
+#include <zephyr/pmci/mctp/mctp_i2c_gpio_target.h>
+#endif
+
 #include <pthread.h>
 
 #include "zenoh-pico/config.h"
@@ -52,6 +59,9 @@ typedef struct {
 #endif
 #if Z_FEATURE_LINK_SERIAL == 1
         const struct device *_serial;
+#endif
+#if Z_EFATURE_LINK_MCTP == 1
+	struct mctp *_mctp;
 #endif
     };
 } _z_sys_net_socket_t;

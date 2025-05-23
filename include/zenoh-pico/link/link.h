@@ -121,6 +121,7 @@ enum _z_link_type_e {
     _Z_LINK_TYPE_SERIAL,
     _Z_LINK_TYPE_WS,
     _Z_LINK_TYPE_RAWETH,
+    _Z_LINK_TYPE_MCTP,
 };
 
 typedef struct _z_link_t {
@@ -144,6 +145,9 @@ typedef struct _z_link_t {
 #endif
 #if Z_FEATURE_RAWETH_TRANSPORT == 1
         _z_raweth_socket_t _raweth;
+#endif
+#if Z_FEATURE_LINK_MCTP == 1
+	_z_mctp_socket_t _mctp;
 #endif
     } _socket;
 
