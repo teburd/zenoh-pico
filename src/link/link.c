@@ -38,6 +38,7 @@ z_result_t _z_open_socket(const _z_string_t *locator, _z_sys_net_socket_t *socke
 z_result_t _z_open_link(_z_link_t *zl, const _z_string_t *locator) {
     z_result_t ret = _Z_RES_OK;
 
+    printf("_z_open_link...");
     _z_endpoint_t ep;
     ret = _z_endpoint_from_string(&ep, locator);
     if (ret == _Z_RES_OK) {
@@ -67,10 +68,12 @@ z_result_t _z_open_link(_z_link_t *zl, const _z_string_t *locator) {
 #endif
 #if Z_FEATURE_LINK_MCTP == 1
         if (_z_endpoint_mctp_valid(&ep) == _Z_RES_OK) {
-            ret = _z_new_link_mctp(zl, &ep);
+            ret = _z_new_link_mctp(zl, &ep);i
+            printf("OK!\n");
         } else
 #endif
         {
+            printf("Unknown Schema!\n");
             ret = _Z_ERR_CONFIG_LOCATOR_SCHEMA_UNKNOWN;
         }
         if (ret == _Z_RES_OK) {

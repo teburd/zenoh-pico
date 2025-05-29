@@ -131,9 +131,12 @@ z_result_t _z_new_transport(_z_transport_t *zt, const _z_id_t *bs, const _z_stri
                             int peer_op) {
     z_result_t ret;
 
+    printf("mode is %d, WHATAMI_CLIENT is %d\n", mode, Z_WHATAMI_CLIENT);
+
     if (mode == Z_WHATAMI_CLIENT) {
         ret = _z_new_transport_client(zt, locator, bs);
     } else {
+        printf("opening peer transport\n");
         ret = _z_new_transport_peer(zt, locator, bs, peer_op);
     }
 

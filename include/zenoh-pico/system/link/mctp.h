@@ -33,7 +33,7 @@ extern "C" {
 #define _Z_MCTP_MTU_SIZE 255
 
 typedef struct {
-	struct mctp *mctp_ctx;
+	_z_sys_net_socket_t _sock;
 	uint8_t endpoint_id;
 } _z_mctp_socket_t;
 

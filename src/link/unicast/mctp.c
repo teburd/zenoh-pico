@@ -22,7 +22,6 @@
 
 #include "zenoh-pico/config.h"
 #include "zenoh-pico/link/manager.h"
-#include "zenoh-pico/system/common/mctp.h"
 #include "zenoh-pico/system/link/mctp.h"
 #include "zenoh-pico/utils/pointers.h"
 
@@ -69,13 +68,12 @@ static char *__z_convert_address_serial(_z_string_t *address) {
 z_result_t _z_f_link_open_mctp(_z_link_t *self) {
     z_result_t ret = _Z_RES_OK;
 
-    const char *baudrate_str = _z_str_intmap_get(&self->_endpoint._config, SERIAL_CONFIG_BAUDRATE_KEY);
-    uint32_t baudrate = (uint32_t)strtoul(baudrate_str, NULL, 10);
-    char *address = __z_convert_address_serial(&self->_endpoint._locator._address);
-    char *p_dot = strchr(address, '.');
+    /* Pull mctp context from a global symbol, since z_open doesn't
+     * allow for construction in any other manner than string configs...
+     */
     extern struct mctp *mctp_ctx;
 
-    &self->_endpoint
+    &self->_socket._mctp._sock._mctp = mctp_ctx;
     
     return ret;
 }
@@ -124,6 +122,7 @@ size_t _z_f_link_read_socket_mctp(const _z_sys_net_socket_t socket, uint8_t *ptr
 uint16_t _z_get_link_mtu_mctp(void) { return _Z_MCTP_MTU_SIZE; }
 
 z_result_t _z_new_link_mctp(_z_link_t *zl, _z_endpoint_t endpoint) {
+    printf("_z_new_link_mctp...");
     z_result_t ret = _Z_RES_OK;
     zl->_type = _Z_LINK_TYPE_MCTP;
     zl->_cap._transport = Z_LINK_CAP_TRANSPORT_UNICAST;
@@ -145,6 +144,7 @@ z_result_t _z_new_link_mctp(_z_link_t *zl, _z_endpoint_t endpoint) {
     zl->_read_exact_f = _z_f_link_read_exact_mctp;
     zl->_read_socket_f = _z_f_link_read_socket_mctp;
 
+    printf("OK!\n");
     return ret;
 }
 #endif

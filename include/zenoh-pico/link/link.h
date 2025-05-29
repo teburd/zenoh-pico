@@ -45,6 +45,10 @@
 #include "zenoh-pico/system/link/ws.h"
 #endif
 
+#if Z_FEATURE_LINK_MCTP == 1
+#include "zenoh-pico/system/link/mctp.h"
+#endif
+
 #include "zenoh-pico/utils/result.h"
 
 #ifdef __cplusplus
