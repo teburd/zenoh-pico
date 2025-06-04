@@ -34,14 +34,13 @@ extern "C" {
 
 typedef struct {
 	_z_sys_net_socket_t _sock;
-	uint8_t endpoint_id;
 } _z_mctp_socket_t;
 
-z_result_t _z_open_mctp_from_context(_z_sys_net_socket_t *sock, struct mctp *mctp_ctx, uint8_t endpoint_id);
+z_result_t _z_open_mctp(_z_sys_net_socket_t *sock, uint8_t endpoint_id);
 void _z_close_mctp(_z_sys_net_socket_t *sock);
 size_t _z_read_exact_mctp(const _z_sys_net_socket_t sock, uint8_t *ptr, size_t len);
-size_t _z_read_mctp_internal(const _z_sys_net_socket_t sock, uint8_t *header, uint8_t *ptr, size_t len);
-size_t _z_send_mctp_internal(const _z_sys_net_socket_t sock, uint8_t header, const uint8_t *ptr, size_t len);
+size_t _z_read_mctp(const _z_sys_net_socket_t sock, uint8_t *ptr, size_t len);
+size_t _z_write_mctp(const _z_sys_net_socket_t sock, const uint8_t *ptr, size_t len);
 
 #endif
 

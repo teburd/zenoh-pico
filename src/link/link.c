@@ -68,8 +68,7 @@ z_result_t _z_open_link(_z_link_t *zl, const _z_string_t *locator) {
 #endif
 #if Z_FEATURE_LINK_MCTP == 1
         if (_z_endpoint_mctp_valid(&ep) == _Z_RES_OK) {
-            ret = _z_new_link_mctp(zl, &ep);i
-            printf("OK!\n");
+            ret = _z_new_link_mctp(zl, ep);
         } else
 #endif
         {

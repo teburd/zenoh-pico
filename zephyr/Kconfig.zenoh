@@ -5,6 +5,11 @@ config ZENOH_PICO
 
 if ZENOH_PICO
 
+config ZENOH_PICO_LINK_MCTP
+	bool "MCTP Link"
+	help
+	  Use mctp link
+
 config ZENOH_PICO_LINK_SERIAL
 	bool "Serial Link"
 	help

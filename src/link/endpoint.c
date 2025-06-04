@@ -316,6 +316,12 @@ z_result_t _z_endpoint_config_from_string(_z_str_intmap_t *strint, const _z_stri
             return _z_serial_config_from_strn(strint, p_start, cfg_size);
         }
 #endif
+#if Z_FEATURE_LINK_MCTP == 1
+        cmp_str = _z_string_alias_str(MCTP_SCHEMA);
+        if (_z_string_equals(proto, &cmp_str)) {
+            return _Z_RES_OK;
+        }
+#endif
 #if Z_FEATURE_LINK_WS == 1
         cmp_str = _z_string_alias_str(WS_SCHEMA);
         if (_z_string_equals(proto, &cmp_str)) {

@@ -60,8 +60,8 @@ typedef struct {
 #if Z_FEATURE_LINK_SERIAL == 1
         const struct device *_serial;
 #endif
-#if Z_EFATURE_LINK_MCTP == 1
-	struct mctp *_mctp;
+#if Z_FEATURE_LINK_MCTP == 1
+	int _mctp;
 #endif
     };
 } _z_sys_net_socket_t;

@@ -27,6 +27,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <zephyr/net/net_if.h>
+#include <zephyr/pmci/mctp/mctp.h>
 #include <zephyr/posix/sys/select.h>
 
 #include "zenoh-pico/collections/string.h"
@@ -805,6 +806,45 @@ size_t _z_send_serial_internal(const _z_sys_net_socket_t sock, uint8_t header, c
     return len;
 }
 #endif
+
+
+#if Z_FEATURE_LINK_MCTP == 1
+z_result_t _z_open_mctp(_z_sys_net_socket_t *sock, uint8_t endpoint_id) {
+    int sock_id = zephyr_mctp_open(endpoint_id);
+
+    if (sock_id >= 0) {
+        sock->_mctp = sock_id;
+        return _Z_RES_OK;
+    } else {
+        return _Z_ERR_GENERIC;
+    }
+}
+
+void _z_close_mctp(_z_sys_net_socket_t *sock) {}
+
+size_t _z_write_mctp(const _z_sys_net_socket_t sock, const uint8_t *ptr, size_t len) {
+    zephyr_mctp_write(sock._mctp, ptr, len);
+
+    return len;
+}
+
+size_t _z_read_mctp(const _z_sys_net_socket_t sock, uint8_t *ptr, size_t len) {
+    size_t read_len = len;
+
+    (void)zephyr_mctp_read(sock._mctp, ptr, &read_len);
+
+    return read_len;
+}
+
+size_t _z_read_exact_mctp(const _z_sys_net_socket_t sock, uint8_t *ptr, size_t len) {
+
+    (void)zephyr_mctp_read_exact(sock._mctp, ptr, len);
+
+    return len;
+}
+#endif /* Z_FEATURE_LINK_MCTP == 1 */
+
+
 
 #if Z_FEATURE_LINK_BLUETOOTH == 1
 #error "Bluetooth not supported yet on Zephyr port of Zenoh-Pico"

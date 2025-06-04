@@ -41,6 +41,9 @@ extern "C" {
 #if Z_FEATURE_LINK_WS == 1
 #define WS_SCHEMA "ws"
 #endif
+#if Z_FEATURE_LINK_MCTP == 1
+#define MCTP_SCHEMA "mctp"
+#endif
 
 #define LOCATOR_PROTOCOL_SEPARATOR '/'
 #define LOCATOR_METADATA_SEPARATOR '?'
