@@ -59,7 +59,7 @@ z_result_t _z_endpoint_mctp_valid(_z_endpoint_t *endpoint) {
 
 
 
-#define MCTP_CONNECT_THROTTLE_TIME_MS 250
+#define MCTP_CONNECT_THROTTLE_TIME_MS 1000
 
 z_result_t _z_connect_mctp(const _z_sys_net_socket_t sock) {
     const uint8_t MCTP_ZENOH_MAGIC[4] = {'M', 'C', 'T', 'P'};
