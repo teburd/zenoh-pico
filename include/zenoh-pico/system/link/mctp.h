@@ -36,6 +36,7 @@ typedef struct {
 	_z_sys_net_socket_t _sock;
 } _z_mctp_socket_t;
 
+z_result_t _z_listen_mctp(_z_sys_net_socket_t *sock);
 z_result_t _z_open_mctp(_z_sys_net_socket_t *sock, uint8_t endpoint_id);
 void _z_close_mctp(_z_sys_net_socket_t *sock);
 size_t _z_read_exact_mctp(const _z_sys_net_socket_t sock, uint8_t *ptr, size_t len);

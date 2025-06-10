@@ -31,6 +31,8 @@ static void *_zp_unicast_accept_task(void *ctx) {
     while (*accept_task_is_running) {
         // Accept connection
         z_result_t ret = _z_socket_accept(&listen_socket, &con_socket);
+
+        printf("accepted socket!, result %d, con_socket %d\n", ret, con_socket._mctp);
         if (ret != _Z_RES_OK) {
             if (ret == _Z_ERR_INVALID) {
                 _Z_INFO("Accept socket was closed");
@@ -47,19 +49,23 @@ static void *_zp_unicast_accept_task(void *ctx) {
         }
         _z_transport_unicast_establish_param_t param = {0};
         // Start handshake
+        //
         ret = _z_unicast_handshake_listen(&param, &ztu->_common._link, &_Z_RC_IN_VAL(ztu->_common._session)->_local_zid,
                                           Z_WHATAMI_PEER, &con_socket);
+
         if (ret != _Z_RES_OK) {
             _Z_INFO("Connection accept handshake failed with error %d", ret);
             _z_socket_close(&con_socket);
             continue;
         }
         // Set socket as non blocking
+        printf("set socket non-blocking\n");
         if (_z_socket_set_non_blocking(&con_socket) != _Z_RES_OK) {
             _Z_INFO("Failed to set socket non blocking");
             _z_socket_close(&con_socket);
             continue;
         }
+
         // Add peer
         _z_transport_unicast_peer_add(ztu, &param, con_socket);
     }

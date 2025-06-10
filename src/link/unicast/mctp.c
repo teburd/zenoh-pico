@@ -63,7 +63,6 @@ z_result_t _z_endpoint_mctp_valid(_z_endpoint_t *endpoint) {
 
 z_result_t _z_connect_mctp(const _z_sys_net_socket_t sock) {
     const uint8_t MCTP_ZENOH_MAGIC[4] = {'M', 'C', 'T', 'P'};
-    const uint8_t MCTP_ZENOH_MAGIC_RESP[4] = {'P', 'T', 'C', 'M'};
 
     while (true) {
         _z_write_mctp(sock, MCTP_ZENOH_MAGIC, 4);
@@ -77,13 +76,15 @@ z_result_t _z_connect_mctp(const _z_sys_net_socket_t sock) {
             continue;
         }
 
-        bool match = false;
+        bool match = true;
         for (int i = 0; i < 4; i++) {
-            match = match && (magic_response[i] == MCTP_ZENOH_MAGIC_RESP[i]);
+            match = match && (magic_response[i] == MCTP_ZENOH_MAGIC[i]);
         }
+
         if (match) {
             goto out;
         } else {
+            _Z_DEBUG("received unmatched response [%c, %c, %c, %c]\n", magic_response[0], magic_response[1], magic_response[2], magic_response[3]);
             z_sleep_ms(MCTP_CONNECT_THROTTLE_TIME_MS);
         }
     }
@@ -93,22 +94,24 @@ out:
 }
 
 z_result_t _z_f_link_open_mctp(_z_link_t *self) {
-    z_result_t ret = _Z_RES_OK;
-
+    char address[4];
     size_t addr_len = _z_string_len(&self->_endpoint._locator._address);
     const char *p_start = _z_string_data(&self->_endpoint._locator._address);
+    memcpy(address, p_start, addr_len);
+    address[addr_len] = '\0';
+    uint32_t endpoint_id = (uint32_t)strtoul(address, NULL, 10);
 
-    printf("opening mctp endpoint address %s\n", p_start);
-    
-    uint32_t endpoint_id = (uint32_t)strtoul(p_start, NULL, 10);
+    _Z_DEBUG("opening mctp endpoint address %d\n", endpoint_id);
 
     _z_open_mctp(&self->_socket._mctp._sock, endpoint_id);
 
-    return (ret == _Z_RES_OK ? _z_connect_mctp(self->_socket._mctp._sock) : ret);
+    return _Z_RES_OK;
 }
 
 z_result_t _z_f_link_listen_mctp(_z_link_t *self) {
-    z_result_t ret = _Z_ERR_GENERIC;
+    z_result_t ret = _Z_RES_OK;
+
+    _z_listen_mctp(&self->_socket._mctp._sock);
     
     return ret;
 }
@@ -122,7 +125,11 @@ void _z_f_link_free_mctp(_z_link_t *self) { (void)(self); }
 size_t _z_f_link_write_mctp(const _z_link_t *self, const uint8_t *ptr, size_t len, _z_sys_net_socket_t *socket) {
     _ZP_UNUSED(socket);
 
-    return _z_write_mctp(self->_socket._mctp._sock, ptr, len);
+    if (socket == NULL) {
+        return _z_write_mctp(self->_socket._mctp._sock, ptr, len);
+    } else {
+        return _z_write_mctp(*socket, ptr, len);
+    }
 }
 
 size_t _z_f_link_write_all_mctp(const _z_link_t *self, const uint8_t *ptr, size_t len) {
@@ -139,9 +146,20 @@ size_t _z_f_link_read_mctp(const _z_link_t *self, uint8_t *ptr, size_t len, _z_s
 size_t _z_f_link_read_exact_mctp(const _z_link_t *self, uint8_t *ptr, size_t len, _z_slice_t *addr,
                                    _z_sys_net_socket_t *socket) {
     _ZP_UNUSED(addr);
-    _ZP_UNUSED(socket);
 
-    return _z_read_exact_mctp(self->_socket._mctp._sock, ptr, len);
+    printf("_z_read_exact_mctp\n");
+
+    int ret;
+
+    if (socket != NULL) {
+        ret = _z_read_exact_mctp(*socket, ptr, len);
+    } else {
+        ret = _z_read_exact_mctp(self->_socket._mctp._sock, ptr, len);
+    }
+
+    printf("_z_read_exact_mctp result %d, len %u", ret, len);
+
+    return len;
 }
 
 size_t _z_f_link_read_socket_mctp(const _z_sys_net_socket_t socket, uint8_t *ptr, size_t len) {
@@ -154,7 +172,7 @@ z_result_t _z_new_link_mctp(_z_link_t *zl, _z_endpoint_t endpoint) {
     z_result_t ret = _Z_RES_OK;
     zl->_type = _Z_LINK_TYPE_MCTP;
     zl->_cap._transport = Z_LINK_CAP_TRANSPORT_UNICAST;
-    zl->_cap._flow = Z_LINK_CAP_FLOW_DATAGRAM;
+    zl->_cap._flow = Z_LINK_CAP_FLOW_STREAM;
     zl->_cap._is_reliable = false;
 
     zl->_mtu = _z_get_link_mtu_mctp();

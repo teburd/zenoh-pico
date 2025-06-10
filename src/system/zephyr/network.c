@@ -130,10 +130,67 @@ z_result_t _z_socket_wait_event(void *v_peers, _z_mutex_rec_t *mutex) {
     _z_mutex_rec_unlock(mutex);
     return _Z_RES_OK;
 }
+#elif Z_FEATURE_LINK_MCTP == 1
+z_result_t _z_socket_wait_event(void *v_peers, _z_mutex_rec_t *mutex) {
+
+    /* We need an array of k_poll_event's to k_poll on, so allocate them
+     * from the list of "sockets"
+     */
+    int num_events = 0;
+    struct k_poll_event *events;
+
+    _z_mutex_rec_lock(mutex);
+    _z_transport_unicast_peer_list_t **peers = (_z_transport_unicast_peer_list_t **)v_peers;
+    _z_transport_unicast_peer_list_t *curr = *peers;
+    while (curr != NULL) {
+        curr = _z_transport_unicast_peer_list_tail(curr);
+        num_events += 1;
+    }
+    events = z_malloc(sizeof(struct k_poll_event)*num_events);
+    if (events == NULL) {
+        _z_mutex_rec_unlock(mutex);
+        return _Z_ERR_GENERIC;
+    }
+
+    int idx = 0;
+    curr = *peers;
+    while (curr != NULL) {
+        _z_transport_unicast_peer_t *peer = _z_transport_unicast_peer_list_head(curr);
+        zephyr_mctp_poll_event_init(peer->_socket._mctp, &events[idx]);
+        curr = _z_transport_unicast_peer_list_tail(curr);
+        idx += 1;
+    }
+
+    int rc = k_poll(events, num_events, K_MSEC(Z_CONFIG_SOCKET_TIMEOUT));
+
+    if (rc != 0) {
+        z_free(events);
+        _z_mutex_rec_unlock(mutex);
+        return _Z_ERR_GENERIC;
+    }
+
+    idx = 0;
+    curr = *peers;
+    while (curr != NULL) {
+        _z_transport_unicast_peer_t *peer = _z_transport_unicast_peer_list_head(curr);
+
+        if (events[idx].state & K_POLL_STATE_SEM_AVAILABLE) {
+            peer->_pending = true;
+        }
+
+        curr = _z_transport_unicast_peer_list_tail(curr);
+        idx += 1;
+    }
+
+    z_free(events);
+    _z_mutex_rec_unlock(mutex);
+    return _Z_RES_OK;
+}
 #else
 z_result_t _z_socket_wait_event(void *peers, _z_mutex_rec_t *mutex) {
-    _ZP_UNUSED(peers);
-    _ZP_UNUSED(mutex);
+    _Z_UNUSED(peers);
+    _Z_UNUSED(mutex);
+
     return _Z_RES_OK;
 }
 #endif
@@ -215,7 +272,7 @@ z_result_t _z_open_tcp(_z_sys_net_socket_t *sock, const _z_sys_net_endpoint_t re
 z_result_t _z_listen_tcp(_z_sys_net_socket_t *sock, const _z_sys_net_endpoint_t lep) {
     z_result_t ret = _Z_RES_OK;
     // Open socket
-    sock->_fd = socket(lep._iptcp->ai_family, lep._iptcp->ai_socktype, lep._iptcp->ai_protocol);
+    sock->_fd = socreturn _Z_RES_OK;ket(lep._iptcp->ai_family, lep._iptcp->ai_socktype, lep._iptcp->ai_protocol);
     if (sock->_fd == -1) {
         return _Z_ERR_GENERIC;
     }
@@ -809,6 +866,20 @@ size_t _z_send_serial_internal(const _z_sys_net_socket_t sock, uint8_t header, c
 
 
 #if Z_FEATURE_LINK_MCTP == 1
+z_result_t _z_socket_accept(const _z_sys_net_socket_t *sock, _z_sys_net_socket_t *sock_out)
+{
+    sock_out->_mctp = zephyr_mctp_accept(sock->_mctp);
+
+    return _Z_RES_OK;
+}
+
+
+z_result_t _z_listen_mctp(_z_sys_net_socket_t *sock) {
+    sock->_mctp = zephyr_mctp_listen();
+
+    return _Z_RES_OK;
+}
+
 z_result_t _z_open_mctp(_z_sys_net_socket_t *sock, uint8_t endpoint_id) {
     int sock_id = zephyr_mctp_open(endpoint_id);
 
@@ -838,7 +909,10 @@ size_t _z_read_mctp(const _z_sys_net_socket_t sock, uint8_t *ptr, size_t len) {
 
 size_t _z_read_exact_mctp(const _z_sys_net_socket_t sock, uint8_t *ptr, size_t len) {
 
-    (void)zephyr_mctp_read_exact(sock._mctp, ptr, len);
+    printf("zephyr_mctp_read_exact\n");
+    int ret = zephyr_mctp_read_exact(sock._mctp, ptr, len);
+
+    printf("result %d, len %u\n", ret, len);
 
     return len;
 }

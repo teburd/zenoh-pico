@@ -79,6 +79,7 @@ static z_result_t _z_locators_by_config(_z_config_t *config, _z_string_svec_t *l
     }
 #if Z_FEATURE_UNICAST_PEER == 1
     if (listen != NULL) {
+        printf("listen not null\n");
         // Add listen as first endpoint
         _z_string_t s = _z_string_copy_from_str(listen);
         _Z_RETURN_IF_ERR(_z_string_svec_append(locators, &s, true));
@@ -124,7 +125,7 @@ static z_result_t _z_config_get_mode(const _z_config_t *config, z_whatami_t *mod
 static z_result_t _z_open_inner(_z_session_rc_t *zn, _z_string_t *locator, const _z_id_t *zid, int peer_op) {
     z_result_t ret = _Z_RES_OK;
 
-    printf("_z_new_transport\n");
+    printf("peer op %d\n", peer_op);
     ret = _z_new_transport(&_Z_RC_IN_VAL(zn)->_tp, zid, locator, _Z_RC_IN_VAL(zn)->_mode, peer_op);
     if (ret != _Z_RES_OK) {
         return ret;

@@ -7,7 +7,7 @@ zephyr_include_directories(../../libmctp)
 zephyr_library()
 
 zephyr_compile_definitions(ZENOH_ZEPHYR)
-zephyr_compile_definitions(ZENOH_DEBUG=0)
+zephyr_compile_definitions(ZENOH_LOG_DEBUG)
 
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/../version.txt version)
 set(ZENOH_PICO ${PROJECT_VERSION})
@@ -39,8 +39,8 @@ set(Z_FEATURE_PUBLICATION 1 CACHE STRING "Toggle publication feature")
 set(Z_FEATURE_SUBSCRIPTION 1 CACHE STRING "Toggle subscription feature")
 set(Z_FEATURE_QUERY 1 CACHE STRING "Toggle query feature")
 set(Z_FEATURE_QUERYABLE 1 CACHE STRING "Toggle queryable feature")
-set(Z_FEATURE_LIVELINESS 0 CACHE STRING "Toggle liveliness feature")
-set(Z_FEATURE_INTEREST 0 CACHE STRING "Toggle interests")
+set(Z_FEATURE_LIVELINESS 1 CACHE STRING "Toggle liveliness feature")
+set(Z_FEATURE_INTEREST 1 CACHE STRING "Toggle interests")
 set(Z_FEATURE_FRAGMENTATION 0 CACHE STRING "Toggle fragmentation")
 set(Z_FEATURE_ENCODING_VALUES 0 CACHE STRING "Toggle encoding values")
 set(Z_FEATURE_MULTI_THREAD 1 CACHE STRING "Toggle multithread")
@@ -64,16 +64,14 @@ set(Z_FEATURE_BATCHING 0 CACHE STRING "Toggle batching")
 set(Z_FEATURE_MATCHING 0 CACHE STRING "Toggle matching feature")
 set(Z_FEATURE_RX_CACHE 0 CACHE STRING "Toggle RX_CACHE")
 set(Z_FEATURE_UNICAST_PEER 1 CACHE STRING "Toggle Unicast peer mode")
-set(Z_FEATURE_UNICAST_ACCEPT 0 CACHE STRING "Toggle Unicast accept")
+set(Z_FEATURE_UNICAST_ACCEPT 1 CACHE STRING "Toggle Unicast accept")
 set(Z_FEATURE_AUTO_RECONNECT 0 CACHE STRING "Toggle automatic reconnection")
-
 
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/../include/zenoh-pico/config.h.in
   ${CMAKE_CURRENT_SOURCE_DIR}/../include/zenoh-pico/config.h
   @ONLY
 )
-
 
 file(GLOB_RECURSE Sources
   "../src/api/*.c"
